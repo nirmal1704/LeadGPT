@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# Exports / generated files
+/tmp/
+backend/exports/
+
+# Logs
+*.log
+logs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+*.coveragerc
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / Next.js
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/dist/
+.npm/
+*.tgz
+
+# Docker
+*.dockerignore
+
+# Database / migrations (keep SQL files but ignore output)
+*.sqlite
+*.db
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Playwright / browser-use / camoufox downloads
+playwright/.local-browsers/
+camoufox/.local-browsers/
