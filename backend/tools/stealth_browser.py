@@ -20,7 +20,12 @@ async def get_stealth_browser() -> tuple[AsyncCamoufox, BrowserUseBrowser]:
     camoufox_cm = AsyncCamoufox(
         headless=True,
         humanize=True,
-        args=["--no-sandbox", "--disable-setuid-sandbox"],
+        args=[
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+        ],
     )
     playwright_browser = await camoufox_cm.__aenter__()
     bu_browser = _wrap_for_browser_use(playwright_browser)

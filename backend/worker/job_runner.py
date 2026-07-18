@@ -65,7 +65,10 @@ def run_intelligence_job(
     }
 
     try:
-        final_state = asyncio.run(intelligence_graph.ainvoke(initial_state))
+        final_state = asyncio.run(intelligence_graph.ainvoke(
+            initial_state,
+            config={"recursion_limit": 100},
+        ))
         _persist_results(job_id, final_state)
 
         lead_count = len(final_state.get("validated_leads", []))

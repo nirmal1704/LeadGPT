@@ -38,6 +38,7 @@ services:
       resources:
         limits:
           memory: 3g
+    shm_size: '2gb'
     restart: unless-stopped
 
   frontend:
