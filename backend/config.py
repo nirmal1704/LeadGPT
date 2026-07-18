@@ -6,11 +6,10 @@ class Settings(BaseSettings):
     SUPABASE_URL: str
     SUPABASE_SERVICE_KEY: str
     SUPABASE_ANON_KEY: str
+    SUPABASE_JWT_SECRET: str
     REDIS_URL: str
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
-    NEXT_PUBLIC_SUPABASE_URL: str = ""
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: str = ""
-    NEXT_PUBLIC_API_URL: str = ""
+
     CAPSOLVER_API_KEY: str = ""
     GROQ_REQUESTS_PER_MINUTE: int = 28
     GROQ_MODEL: str = "openai/gpt-oss-120b"
