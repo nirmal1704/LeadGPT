@@ -19,4 +19,5 @@ celery_app.conf.update(
     task_acks_late=True,
 )
 
-celery_app.autodiscover_tasks(["worker"])
+celery_app.autodiscover_tasks(["worker"], related_name="job_runner")
+
