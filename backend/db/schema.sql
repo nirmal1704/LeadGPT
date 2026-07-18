@@ -82,10 +82,6 @@ CREATE TABLE IF NOT EXISTS contacts (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- NOTE: seo_reports and competitor_reports have been moved to
--- SEOGPT/backend/db/schema.sql as of 2026-06-30.
--- They are no longer part of LeadGPT's database schema.
-
 -- Exports
 CREATE TABLE IF NOT EXISTS exports (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -165,3 +161,18 @@ AS $$
     ORDER BY kb.embedding <=> query_embedding
     LIMIT match_count;
 $$;
+
+-- Sync new Supabase Auth signups into public.users automatically
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (id, email, created_at)
+  VALUES (new.id, new.email, new.created_at)
+  ON CONFLICT (id) DO NOTHING;
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();

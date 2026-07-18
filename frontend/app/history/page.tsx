@@ -30,7 +30,7 @@ function HistoryContent() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}`,
+      `/api/backend/jobs/${jobId}`,
       { headers: { Authorization: `Bearer ${session.access_token}` } }
     );
     const data = await res.json();

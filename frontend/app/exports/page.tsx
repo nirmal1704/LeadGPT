@@ -26,8 +26,7 @@ function ExportsContent() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const BASE = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${BASE}/exports`, {
+    const res = await fetch(`/api/backend/exports`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     });
     if (res.ok) {
