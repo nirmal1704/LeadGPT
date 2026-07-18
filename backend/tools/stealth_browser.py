@@ -17,7 +17,11 @@ async def get_stealth_browser() -> tuple[AsyncCamoufox, BrowserUseBrowser]:
     Returns (context_manager, browser_use_browser). The caller must call
     await context_manager.__aexit__(None, None, None) when done.
     """
-    camoufox_cm = AsyncCamoufox(humanize=True)
+    camoufox_cm = AsyncCamoufox(
+        headless=True,
+        humanize=True,
+        args=["--no-sandbox", "--disable-setuid-sandbox"],
+    )
     playwright_browser = await camoufox_cm.__aenter__()
     bu_browser = _wrap_for_browser_use(playwright_browser)
     return camoufox_cm, bu_browser
