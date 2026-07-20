@@ -1,29 +1,25 @@
 """
-Stealth browser using Camoufox (camoufox==0.4.11).
+Stealth browser using CloakBrowser (cloakbrowser).
 
-AsyncCamoufox manages the Playwright lifecycle. We wrap its raw playwright.Browser
-in browser-use's Browser class by pre-assigning .playwright_browser, which causes
-browser-use to skip its own chromium launch and use our camoufox instance instead.
+CloakBrowser provides a source-level patched stealth Chromium binary.
+We launch it asynchronously and wrap its Playwright Browser in browser-use's Browser class.
 """
 
-from camoufox.async_api import AsyncCamoufox
+from cloakbrowser import launch_async
 from browser_use.browser.browser import Browser as BrowserUseBrowser, BrowserConfig
 
 
-async def get_stealth_browser() -> tuple[AsyncCamoufox, BrowserUseBrowser]:
+async def get_stealth_browser() -> tuple[None, BrowserUseBrowser]:
     """
-    Launch a Camoufox browser and wrap it for browser-use.
+    Launch a CloakBrowser instance and wrap it for browser-use.
 
-    Returns (context_manager, browser_use_browser). The caller must call
-    await context_manager.__aexit__(None, None, None) when done.
+    Returns (None, browser_use_browser). We return None for the context manager
+    to maintain API compatibility with the caller. The caller should call
+    await browser_use_browser.close() when done.
     """
-    camoufox_cm = AsyncCamoufox(
-        headless=True,
-        humanize=True,
-    )
-    playwright_browser = await camoufox_cm.__aenter__()
+    playwright_browser = await launch_async(headless=True)
     bu_browser = _wrap_for_browser_use(playwright_browser)
-    return camoufox_cm, bu_browser
+    return None, bu_browser
 
 
 def _wrap_for_browser_use(playwright_browser) -> BrowserUseBrowser:

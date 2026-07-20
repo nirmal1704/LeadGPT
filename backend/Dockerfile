@@ -2,9 +2,6 @@ FROM python:3.11-slim-bookworm
 
 ENV PYTHONUNBUFFERED=1
 ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
-ENV MOZ_DISABLE_CONTENT_SANDBOX=1
-ENV MOZ_DISABLE_GMP_SANDBOX=1
-ENV MOZ_DISABLE_RDD_SANDBOX=1
 
 WORKDIR /app
 
@@ -23,9 +20,7 @@ RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN playwright install firefox
-
-RUN camoufox fetch
+RUN playwright install chromium
 
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 

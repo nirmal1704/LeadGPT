@@ -9,7 +9,7 @@ langchain-groq==0.3.8
 langgraph==0.2.76
 browser-use==0.1.40
 crawl4ai==0.7.8
-camoufox==0.4.11
+cloakbrowser==0.4.12
 playwright>=1.49.0
 httpx>=0.27.2,<0.28
 pandas==2.2.2
