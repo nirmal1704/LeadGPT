@@ -42,19 +42,6 @@ services:
     shm_size: '2gb'
     restart: unless-stopped
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    depends_on:
-      - backend
-    networks:
-      - leadgpt_network
-    restart: unless-stopped
 
 networks:
   leadgpt_network:
