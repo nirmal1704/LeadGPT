@@ -1,5 +1,6 @@
 import json
 import logging
+import urllib.parse
 
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -78,8 +79,10 @@ async def discover_leads(state: IntelligenceState) -> dict:
             if len(all_leads) >= leads_requested:
                 break
 
+            encoded_query = urllib.parse.quote(query)
+            search_url = f"https://www.google.com/search?q={encoded_query}"
             task_text = (
-                f"Search Google for: {query}. "
+                f"Navigate directly to this URL: {search_url}\n"
                 "Extract all visible business listings: name, address, phone, website URL. "
                 "Return the extracted data as a JSON array."
             )
