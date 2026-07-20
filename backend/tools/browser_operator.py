@@ -64,8 +64,8 @@ async def execute_browser_task(task: str, use_stealth: bool = True, max_steps: i
         finally:
             await camoufox_cm.__aexit__(None, None, None)
     else:
-        from browser_use.browser.browser import Browser as BrowserUseBrowser
-        bu_browser = BrowserUseBrowser()
+        from browser_use.browser.browser import Browser as BrowserUseBrowser, BrowserConfig
+        bu_browser = BrowserUseBrowser(config=BrowserConfig(browser_type="firefox"))
         try:
             return await run_browser_task(task, bu_browser, max_steps=max_steps)
         finally:
