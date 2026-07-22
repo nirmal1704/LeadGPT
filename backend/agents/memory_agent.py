@@ -11,11 +11,7 @@ async def check_and_store_memory(state: IntelligenceState) -> dict:
     cached = check_memory(objective)
     if cached:
         return {
-            "discovered_leads": cached.get("discovered_leads", []),
-            "enriched_leads": cached.get("enriched_leads", []),
-            "validated_leads": cached.get("validated_leads", []),
-            "leads_found_so_far": len(cached.get("validated_leads", [])),
-            "status": "memory_hit",
+            "tactical_memory": cached.get("tactical_summary", "No tactical summary available."),
             "memory_context": {"source": "cache", "cached_data": cached},
         }
 
@@ -26,10 +22,25 @@ async def check_and_store_memory(state: IntelligenceState) -> dict:
 
 
 def _store_completed_run(state: IntelligenceState, objective: str) -> dict:
+    discovered = state.get("discovered_leads", [])
+    
+    # Generate a tactical summary based on the results
+    tier_1_used = any(l.get("source", "").endswith("(JSON)") for l in discovered)
+    tier_2_used = any(l.get("source", "").endswith("(Visual)") for l in discovered)
+    
+    tactical_summary = "Execution Summary: "
+    if tier_1_used and not tier_2_used:
+        tactical_summary += "Tier 1 HTTP extraction was highly successful. Avoid slow visual scraping."
+    elif tier_2_used and not tier_1_used:
+        tactical_summary += "Tier 1 was entirely blocked. Instruct lead_discovery to fall back to Tier 2.5 Visual Scraper immediately to save time."
+    elif tier_1_used and tier_2_used:
+        tactical_summary += "Tier 1 was partially blocked. Use a mix of HTTP and Visual scraping."
+    else:
+        tactical_summary += "No clear strategy data. Proceed normally."
+
     metadata = {
-        "discovered_leads": state.get("discovered_leads", []),
-        "enriched_leads": state.get("enriched_leads", []),
-        "validated_leads": state.get("validated_leads", []),
+        "tactical_summary": tactical_summary,
+        "leads_found": len(discovered),
     }
     store_knowledge(objective, metadata)
     return {"status": "completed"}

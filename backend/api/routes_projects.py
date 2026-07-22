@@ -10,6 +10,8 @@ router = APIRouter(prefix="/projects", tags=["projects"])
 class ProjectCreate(BaseModel):
     name: str
     description: str = ""
+    company_name: str = ""
+    default_offering: str = ""
 
 
 @router.post("")
@@ -18,6 +20,8 @@ async def create_project(body: ProjectCreate, user_id: str = Depends(get_current
         "user_id": user_id,
         "name": body.name,
         "description": body.description,
+        "company_name": body.company_name,
+        "default_offering": body.default_offering,
     }).execute()
 
     if not result.data:

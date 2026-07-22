@@ -95,8 +95,8 @@ def run_intelligence_job(
 
 def _persist_results(job_id: str, state: IntelligenceState) -> None:
     validated = state.get("validated_leads", [])
-    if validated:
-        store_leads(validated, job_id)
+    # if validated:
+        # store_leads(validated, job_id)
 
 
 def _update_job_status(

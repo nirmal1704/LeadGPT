@@ -33,6 +33,15 @@ def _render_objective(brief: dict) -> str:
 @router.post("")
 async def create_job(body: JobCreate, user_id: str = Depends(get_current_user)):
     brief = body.brief
+
+    # Inject project defaults if missing
+    project_result = supabase_client.table("projects").select("company_name, default_offering").eq("id", body.project_id).single().execute()
+    if project_result.data:
+        if not brief.get("offering") and project_result.data.get("default_offering"):
+            brief["offering"] = project_result.data["default_offering"]
+        if not brief.get("company_name") and project_result.data.get("company_name"):
+            brief["company_name"] = project_result.data["company_name"]
+
     objective = _render_objective(brief)
     leads_requested = int(brief.get("lead_count", 10))
 

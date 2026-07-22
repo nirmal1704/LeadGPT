@@ -37,32 +37,7 @@ def check_memory(objective: str) -> dict | None:
     return None
 
 
-def store_leads(leads: list[dict], job_id: str) -> None:
-    for lead in leads:
-        domain = extract_domain(lead.get("website_url", ""))
-        business_payload = {
-            "name": lead.get("name", ""),
-            "address": lead.get("address", ""),
-            "phone": lead.get("phone", ""),
-            "website_url": lead.get("website_url", ""),
-            "source_url": lead.get("source_url", ""),
-            "domain": domain or None,
-        }
-        result = (
-            supabase_client.table("businesses")
-            .upsert(business_payload, on_conflict="name,address")
-            .execute()
-        )
-        if result.data:
-            business_id = result.data[0]["id"]
-            lead_payload = {
-                "job_id": job_id,
-                "business_id": business_id,
-                "opportunity_category": lead.get("opportunity_category", ""),
-                "opportunity_score": lead.get("opportunity_score", 0),
-                "pitch_angle": lead.get("pitch_angle", ""),
-            }
-            supabase_client.table("leads").insert(lead_payload).execute()
+
 
 
 def store_knowledge(objective: str, metadata: dict) -> None:

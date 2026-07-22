@@ -8,10 +8,10 @@ from graph.state import IntelligenceState
 from tools.rate_limiter import acquire_groq_slot
 
 _PLANNER_PROMPT = """You are a research strategist for a lead-discovery platform.
-Given a structured job brief, produce a JSON object with two keys:
+Given a structured job brief and a tactical memory summary from past jobs, produce a JSON object with two keys:
 
 "plan": an ordered array of 4-6 concise research steps (strings), tailored to the
-  lead_category and location in the brief.
+  lead_category and location in the brief. Use the tactical memory to avoid strategies that recently failed.
 
 "opportunity_categories": an array of category objects, where each object has:
   "code": a snake_case identifier (e.g. "no_website", "broken_link", etc.)
@@ -48,6 +48,7 @@ async def run_planner(state: IntelligenceState) -> dict:
         f"  Location: {brief.get('location', '')}\n"
         f"  Lead count needed: {brief.get('lead_count', 10)}\n"
         f"  Additional notes: {brief.get('additional_notes', '')}\n\n"
+        f"Tactical Memory from Past Jobs: {state.get('tactical_memory', 'None')}\n\n"
         f"Objective summary: {objective}"
     )
 

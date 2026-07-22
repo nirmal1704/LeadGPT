@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS projects (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     description TEXT,
+    company_name TEXT,
+    default_offering TEXT,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -43,44 +45,7 @@ CREATE TABLE IF NOT EXISTS job_logs (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Businesses
-CREATE TABLE IF NOT EXISTS businesses (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name TEXT NOT NULL,
-    address TEXT,
-    phone TEXT,
-    website_url TEXT,
-    source_url TEXT,
-    domain TEXT,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE (name, address)
-);
 
-CREATE UNIQUE INDEX IF NOT EXISTS businesses_domain_idx
-    ON businesses (domain)
-    WHERE domain IS NOT NULL;
-
--- Leads
-CREATE TABLE IF NOT EXISTS leads (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    job_id UUID NOT NULL REFERENCES scraping_jobs(id) ON DELETE CASCADE,
-    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    opportunity_category TEXT,
-    opportunity_score INTEGER,
-    pitch_angle TEXT,
-    is_contacted BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Contacts
-CREATE TABLE IF NOT EXISTS contacts (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-    platform TEXT,
-    profile_url TEXT,
-    email TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
-);
 
 -- Exports
 CREATE TABLE IF NOT EXISTS exports (
@@ -110,7 +75,6 @@ CREATE INDEX IF NOT EXISTS knowledge_base_embedding_idx
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE scraping_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE job_logs ENABLE ROW LEVEL SECURITY;
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exports ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "users_own_projects" ON projects
@@ -124,10 +88,7 @@ CREATE POLICY "users_own_job_logs" ON job_logs
         job_id IN (SELECT id FROM scraping_jobs WHERE user_id = auth.uid())
     );
 
-CREATE POLICY "users_own_leads" ON leads
-    FOR ALL USING (
-        job_id IN (SELECT id FROM scraping_jobs WHERE user_id = auth.uid())
-    );
+
 
 CREATE POLICY "users_own_exports" ON exports
     FOR ALL USING (

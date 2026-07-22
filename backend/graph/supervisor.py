@@ -27,16 +27,16 @@ _SUPERVISOR_PROMPT = f"""You are the supervisor of a lead-discovery AI platform.
 Available agents: {list(_AGENT_REGISTRY.keys())}
 
 Agent responsibilities:
-- planner: Generates the frozen per-job opportunity-category list and search strategy from the JobBrief
-- memory_agent: Checks semantic cache for a prior run matching this objective; if hit, skips to export
+- memory_agent: Checks semantic cache for tactical lessons from prior runs (what worked, what failed)
+- planner: Generates search strategy from the JobBrief, guided by tactical memory
 - lead_discovery: Finds business leads via browser search; loops until the requested count is met
 - lead_enrichment: Verifies contact details, checks website health, scores each lead
 - data_validator: Deduplicates leads and filters out low-quality entries
 - export_agent: Writes the final Excel file (always Excel, no other format)
 
 Based on the objective, return a JSON array of agent names in ORDER.
-Always start with planner.
-Always include memory_agent before lead_discovery.
+Always start with memory_agent.
+Always include planner immediately after memory_agent.
 Always end with export_agent.
 Return ONLY a valid JSON array. No explanation."""
 
@@ -48,8 +48,7 @@ async def run_supervisor(state: IntelligenceState) -> dict:
         active_agents = await _plan_agent_sequence(state)
         return {"active_agents": active_agents, "status": "running"}
 
-    if state.get("status") == "memory_hit":
-        return {"active_agents": ["export_agent"], "status": "running"}
+
 
     return {"active_agents": active_agents}
 
@@ -75,7 +74,7 @@ async def _plan_agent_sequence(state: IntelligenceState) -> list[str]:
         pass
 
     return [
-        "planner", "memory_agent",
+        "memory_agent", "planner",
         "lead_discovery", "lead_enrichment", "data_validator",
         "export_agent",
     ]

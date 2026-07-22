@@ -27,17 +27,15 @@ do two things:
    the offering described. Base it on the category match — a business whose
    observed condition exactly matches what the offering fixes should score 8–10.
 
-3. Write a pitch_angle (one sentence): explain the specific pain point observed
-   and how the offering fixes it. Use only facts that appear in site_data or
-   contact info. Do NOT make up features the business doesn't have.
+3. Write a business_summary (1-2 sentences): briefly summarize what the business does, what their pain point/need is based on the site data, and how the offering can help them. Keep it simple and factual.
 
 Return ONLY valid JSON:
-{"opportunity_category": "no_website", "opportunity_score": 9, "pitch_angle": "..."}"""
+{"opportunity_category": "no_website", "opportunity_score": 9, "business_summary": "..."}"""
 
 
 async def enrich_leads(state: IntelligenceState) -> dict:
     llm = ChatGroq(
-        model=settings.GROQ_MODEL,
+        model=settings.GROQ_FAST_MODEL,
         temperature=0.0,
         api_key=settings.GROQ_API_KEY,
     )
@@ -211,13 +209,13 @@ async def _score_and_categorise(
         return {
             "opportunity_category": result.get("opportunity_category", "unknown"),
             "opportunity_score": int(result.get("opportunity_score", 5)),
-            "pitch_angle": str(result.get("pitch_angle", "")),
+            "business_summary": str(result.get("business_summary", "")),
         }
     except (json.JSONDecodeError, ValueError, TypeError):
         return {
             "opportunity_category": _best_fallback_category(observable, opportunity_categories),
             "opportunity_score": 5,
-            "pitch_angle": "",
+            "business_summary": "",
         }
 
 

@@ -16,7 +16,6 @@ async def validate_data(state: IntelligenceState) -> dict:
     validated: list[dict] = []
     seen_domains: set[str] = set()
     seen_names: set[str] = set()
-    existing_domains = _fetch_existing_domains()
 
     dropped_missing_fields = 0
     dropped_duplicate_name = 0
@@ -39,7 +38,7 @@ async def validate_data(state: IntelligenceState) -> dict:
 
         domain = extract_domain(lead.get("website_url", ""))
         if domain:
-            if domain in seen_domains or domain in existing_domains:
+            if domain in seen_domains:
                 dropped_duplicate_domain += 1
                 continue
             seen_domains.add(domain)
@@ -83,15 +82,4 @@ def _has_required_fields(lead: dict) -> bool:
     ])
 
 
-def _fetch_existing_domains() -> set[str]:
-    """Load domains already in the database to avoid re-exporting known contacts."""
-    try:
-        result = (
-            supabase_client.table("businesses")
-            .select("domain")
-            .not_.is_("domain", "null")
-            .execute()
-        )
-        return {row["domain"] for row in (result.data or []) if row.get("domain")}
-    except Exception:
-        return set()
+

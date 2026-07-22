@@ -3,6 +3,8 @@ import os
 from graph.state import IntelligenceState
 from tools.excel_exporter import export_to_excel
 from db.client import supabase_client
+from db.mongo_client import store_zipped_export
+import zipfile
 
 _EXPORTS_DIR = "/tmp/exports"
 
@@ -25,17 +27,25 @@ async def generate_export(state: IntelligenceState) -> dict:
         category_rules=category_rules,
     )
 
-    _record_export(job_id, file_path)
-    return {"export_path": file_path}
+    zip_path = os.path.join(_EXPORTS_DIR, f"{job_id}_leads.zip")
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.write(file_path, os.path.basename(file_path))
+
+    mongo_id = None
+    with open(zip_path, "rb") as f:
+        mongo_id = store_zipped_export(job_id, f.read())
+
+    _record_export(job_id, zip_path, mongo_id)
+    return {"export_path": zip_path}
 
 
-def _record_export(job_id: str, file_path: str) -> None:
+def _record_export(job_id: str, file_path: str, mongo_id: str | None) -> None:
     try:
         supabase_client.table("exports").insert({
             "job_id": job_id,
             "file_name": os.path.basename(file_path),
-            "file_type": "xlsx",
-            "storage_path": file_path,
+            "file_type": "zip",
+            "storage_path": mongo_id or file_path,
         }).execute()
     except Exception:
         pass

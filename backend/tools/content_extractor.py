@@ -18,28 +18,38 @@ from config import settings
 logger = logging.getLogger(__name__)
 
 
-def _make_browser_config() -> BrowserConfig:
-    return BrowserConfig(browser_type="firefox", headless=True, verbose=False)
+def _make_browser_config(use_stealth: bool = False) -> BrowserConfig:
+    kwargs = {"browser_type": "chromium", "headless": True, "verbose": False}
+    if use_stealth:
+        try:
+            from cloakbrowser import get_binary_path
+            kwargs["browser_executable_path"] = get_binary_path()
+        except ImportError:
+            logger.warning("cloakbrowser not installed, stealth mode may fail")
+        except AttributeError:
+            # fallback if get_binary_path is named differently in future
+            import cloakbrowser
+            if hasattr(cloakbrowser, "BINARY_PATH"):
+                kwargs["browser_executable_path"] = cloakbrowser.BINARY_PATH
+    return BrowserConfig(**kwargs)
 
+def _make_run_config(css_selector: str = None) -> CrawlerRunConfig:
+    kwargs = {
+        "word_count_threshold": 10,
+        "cache_mode": CacheMode.BYPASS,
+        "exclude_social_media_links": True,
+        "verbose": False,
+    }
+    if css_selector:
+        kwargs["css_selector"] = css_selector
+    return CrawlerRunConfig(**kwargs)
 
-def _make_run_config() -> CrawlerRunConfig:
-    return CrawlerRunConfig(
-        word_count_threshold=10,
-        cache_mode=CacheMode.BYPASS,
-        exclude_social_media_links=True,
-        verbose=False,
-    )
-
-
-async def extract_page_content(url: str) -> dict:
+async def extract_page_content(url: str, use_stealth: bool = False, css_selector: str = None) -> dict:
     """
     Extract structured content from a URL.
-
-    Returns a dict with keys: markdown, status_code, url, is_https, title,
-    meta_description, h1_tags, internal_links_count, has_mobile_viewport.
     """
-    async with AsyncWebCrawler(config=_make_browser_config()) as crawler:
-        result = await crawler.arun(url=url, config=_make_run_config())
+    async with AsyncWebCrawler(config=_make_browser_config(use_stealth=use_stealth)) as crawler:
+        result = await crawler.arun(url=url, config=_make_run_config(css_selector=css_selector))
 
     if not result.success:
         logger.warning("crawl4ai failed for %s: %s", url, result.error_message)
@@ -47,19 +57,19 @@ async def extract_page_content(url: str) -> dict:
 
     return _build_result_dict(result)
 
+async def extract_with_stealth_browser(url: str, css_selector: str = None) -> dict:
+    """Tier 2 Fallback: Extract using CloakBrowser + Crawl4AI."""
+    return await extract_page_content(url, use_stealth=True, css_selector=css_selector)
 
 async def batch_extract(urls: list[str]) -> list[dict]:
     """
-    Extract content from multiple URLs concurrently.
-
-    Concurrency is capped at settings.MAX_CONCURRENT_PAGES to prevent OOM
-    on the 3 GB worker container (each arun() opens a full browser context).
+    Extract content from multiple URLs concurrently (standard mode).
     """
     semaphore = asyncio.Semaphore(settings.MAX_CONCURRENT_PAGES)
 
     async def _crawl_one(url: str) -> dict:
         async with semaphore:
-            return await extract_page_content(url)
+            return await extract_page_content(url, use_stealth=False)
 
     results = await asyncio.gather(*[_crawl_one(u) for u in urls], return_exceptions=True)
 
