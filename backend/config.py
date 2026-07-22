@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     CAPSOLVER_API_KEY: str = ""
     GROQ_REQUESTS_PER_MINUTE: int = 28
-    GROQ_MODEL: str = "openai/gpt-oss-120b"  # Smart model for planning/validation
+    GROQ_MODEL: str = "llama3-70b-8192"  # Smart model for planning/validation
     GROQ_FAST_MODEL: str = "llama3-8b-8192"  # Fast model for extraction
     GROQ_TOKENS_PER_MINUTE: int = 7500
     MEMORY_SIMILARITY_THRESHOLD: float = 0.85
