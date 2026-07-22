@@ -9,12 +9,12 @@ class Settings(BaseSettings):
     REDIS_URL: str
     MONGO_URI: str = ""
     CORS_ORIGINS: list[str] = ["http://localhost:3000"]
-
-    CAPSOLVER_API_KEY: str = ""
-    GROQ_REQUESTS_PER_MINUTE: int = 28
-    GROQ_MODEL: str = "llama3-70b-8192"  # Smart model for planning/validation
-    GROQ_FAST_MODEL: str = "llama3-8b-8192"  # Fast model for extraction
-    GROQ_TOKENS_PER_MINUTE: int = 7500
+    GROQ_MODEL: str = "deepseek-r1-distill-llama-70b"
+    GROQ_FAST_MODEL: str = "gemma2-9b-it"
+    GROQ_SMART_RPM: int = 28
+    GROQ_SMART_TPM: int = 6000
+    GROQ_FAST_RPM: int = 28
+    GROQ_FAST_TPM: int = 15000
     MEMORY_SIMILARITY_THRESHOLD: float = 0.85
     NOPECHA_EXTENSION_PATH: str = "/opt/extensions/nopecha.crx"
     CAPTCHA_TIMEOUT_SECONDS: int = 30

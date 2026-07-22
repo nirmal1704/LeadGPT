@@ -5,19 +5,17 @@ from aiolimiter import AsyncLimiter
 
 from config import settings
 
-request_limiter = AsyncLimiter(
-    max_rate=settings.GROQ_REQUESTS_PER_MINUTE,
-    time_period=60,
-)
+smart_request_limiter = AsyncLimiter(max_rate=settings.GROQ_SMART_RPM, time_period=60)
+smart_token_limiter = AsyncLimiter(max_rate=settings.GROQ_SMART_TPM, time_period=60)
 
-token_limiter = AsyncLimiter(
-    max_rate=settings.GROQ_TOKENS_PER_MINUTE,
-    time_period=60,
-)
-
+fast_request_limiter = AsyncLimiter(max_rate=settings.GROQ_FAST_RPM, time_period=60)
+fast_token_limiter = AsyncLimiter(max_rate=settings.GROQ_FAST_TPM, time_period=60)
 
 @asynccontextmanager
-async def acquire_groq_slot(estimated_tokens: int = 500) -> AsyncGenerator[None, None]:
-    async with request_limiter:
-        async with token_limiter:
+async def acquire_groq_slot(estimated_tokens: int = 500, model_tier: str = "smart") -> AsyncGenerator[None, None]:
+    req_limiter = fast_request_limiter if model_tier == "fast" else smart_request_limiter
+    tok_limiter = fast_token_limiter if model_tier == "fast" else smart_token_limiter
+    
+    async with req_limiter:
+        async with tok_limiter:
             yield

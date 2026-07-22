@@ -195,7 +195,7 @@ async def _score_and_categorise(
         f"Lead category: {brief.get('lead_category', '')}"
     )
 
-    async with acquire_groq_slot(estimated_tokens=500):
+    async with acquire_groq_slot(estimated_tokens=500, model_tier="fast"):
         response = await llm.ainvoke([
             SystemMessage(content=prompt),
             HumanMessage(content=f"Lead name: {lead.get('name', '')}\nObservable facts: {json.dumps(observable)}"),

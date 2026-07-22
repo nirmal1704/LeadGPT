@@ -120,7 +120,7 @@ async def _generate_queries(llm: ChatGroq, brief: dict, state: IntelligenceState
         f"Research plan:\n{plan_text}"
     )
 
-    async with acquire_groq_slot(estimated_tokens=600):
+    async with acquire_groq_slot(estimated_tokens=500, model_tier="fast"):
         response = await llm.ainvoke([
             SystemMessage(content=_QUERY_GENERATION_PROMPT),
             HumanMessage(content=prompt_body),
