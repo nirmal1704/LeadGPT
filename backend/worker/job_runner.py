@@ -5,7 +5,7 @@ from worker.celery_app import celery_app
 from graph.supervisor import intelligence_graph
 from graph.state import IntelligenceState
 from db.client import supabase_client
-from db.memory_store import store_leads, log_job_event, update_job_progress
+from db.memory_store import log_job_event
 
 
 def _render_objective(brief: dict) -> str:

@@ -98,3 +98,38 @@ async def navigate_and_get_page_content(url: str, use_stealth: bool = True, max_
             return await run_navigation_task(url, bu_browser, max_steps=max_steps)
         finally:
             await bu_browser.close()
+
+
+async def execute_browser_task(task: str, use_stealth: bool = True, max_steps: int = 5) -> str:
+    """Execute a specific instruction using the browser-use agent and return the text result."""
+    from tools.stealth_browser import get_stealth_browser
+    
+    llm = ChatGroq(
+        model=settings.GROQ_FAST_MODEL,
+        temperature=0.0,
+        api_key=settings.GROQ_API_KEY,
+    )
+
+    if use_stealth:
+        _, bu_browser = await get_stealth_browser()
+    else:
+        from browser_use.browser.browser import Browser as BrowserUseBrowser, BrowserConfig
+        bu_browser = BrowserUseBrowser(config=BrowserConfig(browser_type="chromium"))
+
+    try:
+        agent = Agent(
+            task=task,
+            llm=llm,
+            browser=bu_browser,
+            register_new_step_callback=_step_delay_callback,
+            use_vision=False,
+            max_failures=3,
+        )
+        async with acquire_groq_slot(estimated_tokens=1000, model_tier="fast"):
+            result = await agent.run(max_steps=max_steps)
+            # browser-use 0.1.40 Agent.run returns AgentHistoryList
+            if hasattr(result, "final_result"):
+                return str(result.final_result())
+            return str(result)
+    finally:
+        await bu_browser.close()
